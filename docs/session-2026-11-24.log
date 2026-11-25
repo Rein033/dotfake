@@ -1,0 +1,57 @@
+# The official phone app (iOS) talking to a test unit, 2026-11-24.
+# The unit was a Kode-watch in "Dot pose" (same console as dotfake, plus a few verbs).
+# "<<" is what the app wrote to RX (0002), ">>" what the unit notified on TX (0003).
+# Verbs that this test unit did not know yet answer ">err code=1"; that is the
+# unit's limit, not the app's. The order is the app's own.
+
+# -- after pairing (passkey 123456) and subscribing to TX:
+<< info
+>> >|serial=KODE24QP6QH2XAQ product="KODE-DOT" board="DVT"
+>> >|mac_p4=44:bd:8d:78:8b:a8 mac_c5=44:bd:8d:78:8b:aa
+>> >|slot=factory addr=0x020000 size_kb=4096 state=running project="kodeos" version="0.1.5" idf="v6.1"
+>> >|slot=ota_0 addr=0x420000 size_kb=4096 state=empty project=- version=- idf=-
+>> >|slot=ota_1 addr=0x820000 size_kb=4096 state=empty project=- version=- idf=-
+>> >|coredump=none
+>> >|log=warn source=default
+>> >ok
+<< wifi_info
+>> >err code=1 msg=wifi_info
+<< wifi_scan
+>> >err code=1 msg=wifi_scan
+<< bat_info
+>> >|vbat_mv=3976 vbus_mv=5000 vbus=on boost=off current_ma=300 soc=68 charging=1 fault=0
+>> >ok
+<< app_list
+>> >err code=1 msg=app_list
+<< info
+>> (same as above)
+
+# -- opening the Kode Dot's page in the app:
+<< config key="bright"
+>> >err code=1 msg=config
+<< wifi_info
+>> >err code=1 msg=wifi_info
+
+# -- the remote buttons on that page:
+<< btn id=bot state=press
+<< btn id=bot state=press
+<< btn id=top state=press
+<< btn id=top state=press
+<< btn id=top state=press
+<< btn id=right state=press
+<< btn id=up state=press
+
+# -- later unit version that answers app_list (one record per app; list cut short here):
+>> >|name="Music" version=1.0.0 size_kb=0 category="watch" display="Music"
+>> >|name="Sleep" version=1.0.0 size_kb=0 category="watch" display="Sleep"
+>> >ok
+
+# -- pressing Download on a marketplace app:
+<< install src="terminal" dst=app size=3740736 crc32=3803774522 run=on
+>> >|ready chunk=4096
+   (4096 raw bytes)
+>> >|ack
+   (4096 raw bytes)
+>> >|ack
+   ... (3740736 bytes = 913 full chunks, each acked, and one partial chunk that gets no ack)
+>> >ok    (from the kodeOS source; the test unit's log was cut before this line)
